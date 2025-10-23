@@ -1,0 +1,48 @@
+apiVersion: traefik.io/v1alpha1
+kind: IngressRoute
+metadata:
+  name: pwa-ingress 
+  namespace: school
+spec:
+  entryPoints: [https]
+  routes:
+  - kind: Rule
+    match: Host(`pwa.pycrs.cz`)
+    services:
+    - kind: Service
+      name: time-service
+      port: 80 
+  tls: {}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: time-service
+  namespace: school
+spec:
+  selector:
+    app: pwa-deployment
+  ports:
+    - port: 80
+      targetPort: 8080
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: pwa-deployment
+  namespace: school
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: pwa-deployment
+  template:
+    metadata:
+      labels:
+        app: pwa-deployment
+    spec:
+      containers:
+        - name: server
+          image: registry.gitlab.pycrs.cz/tul/pwa-2025/server:latest
+          ports:
+            - containerPort: 8080
